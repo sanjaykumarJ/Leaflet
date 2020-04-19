@@ -55,7 +55,7 @@ describe("L.GeoJSON", function () {
 				type: 'Feature',
 				geometry: {
 					type: 'LineString',
-					coordinates:[[-2.35, 51.38], [-2.38, 51.38]]
+					coordinates: [[-2.35, 51.38], [-2.38, 51.38]]
 				}
 			};
 			var geojson = L.geoJSON(feature, {weight: 7, color: 'chocolate'});
@@ -73,14 +73,14 @@ describe("L.GeoJSON", function () {
 				type: 'Feature',
 				geometry: {
 					type: 'LineString',
-					coordinates:[[-2.35, 51.38], [-2.38, 51.38]]
+					coordinates: [[-2.35, 51.38], [-2.38, 51.38]]
 				}
 			};
 			var feature2 = {
 				type: 'Feature',
 				geometry: {
 					type: 'LineString',
-					coordinates:[[-3.35, 50.38], [-3.38, 50.38]]
+					coordinates: [[-3.35, 50.38], [-3.38, 50.38]]
 				}
 			};
 			var geojson = L.geoJSON([feature, feature2], {weight: 7, color: 'chocolate'});
@@ -365,8 +365,8 @@ describe("L.Polygon (multi) #toGeoJSON", function () {
 describe("L.LayerGroup#toGeoJSON", function () {
 	it("returns a 2D FeatureCollection object", function () {
 		var marker = new L.Marker([10, 20]),
-		    polyline = new L.Polyline([[10, 20], [2, 5]]),
-		    layerGroup = new L.LayerGroup([marker, polyline]);
+		polyline = new L.Polyline([[10, 20], [2, 5]]),
+		layerGroup = new L.LayerGroup([marker, polyline]);
 		expect(layerGroup.toGeoJSON()).to.eql({
 			type: 'FeatureCollection',
 			features: [marker.toGeoJSON(), polyline.toGeoJSON()]
@@ -375,8 +375,8 @@ describe("L.LayerGroup#toGeoJSON", function () {
 
 	it("returns a 3D FeatureCollection object", function () {
 		var marker = new L.Marker([10, 20, 30]),
-		    polyline = new L.Polyline([[10, 20, 30], [2, 5, 10]]),
-		    layerGroup = new L.LayerGroup([marker, polyline]);
+		polyline = new L.Polyline([[10, 20, 30], [2, 5, 10]]),
+		layerGroup = new L.LayerGroup([marker, polyline]);
 		expect(layerGroup.toGeoJSON()).to.eql({
 			type: 'FeatureCollection',
 			features: [marker.toGeoJSON(), polyline.toGeoJSON()]
@@ -385,7 +385,7 @@ describe("L.LayerGroup#toGeoJSON", function () {
 
 	it("ensures that every member is a Feature", function () {
 		var tileLayer = new L.TileLayer(),
-		    layerGroup = new L.LayerGroup([tileLayer]);
+		layerGroup = new L.LayerGroup([tileLayer]);
 
 		tileLayer.toGeoJSON = function () {
 			return {
@@ -486,7 +486,7 @@ describe("L.LayerGroup#toGeoJSON", function () {
 
 	it("omits layers which do not implement toGeoJSON", function () {
 		var tileLayer = new L.TileLayer(),
-		    layerGroup = new L.LayerGroup([tileLayer]);
+		layerGroup = new L.LayerGroup([tileLayer]);
 		expect(layerGroup.toGeoJSON()).to.eql({
 			type: 'FeatureCollection',
 			features: []
@@ -508,11 +508,53 @@ describe("L.LayerGroup#toGeoJSON", function () {
 
 	it("should allow specific precisions", function () {
 		var marker = new L.Marker([10, 20]),
-		    polyline = new L.Polyline([[10, 20], [2, 5]]),
-		    layerGroup = new L.LayerGroup([marker, polyline]);
+		polyline = new L.Polyline([[10, 20], [2, 5]]),
+		layerGroup = new L.LayerGroup([marker, polyline]);
 		expect(layerGroup.toGeoJSON(3)).to.eql({
 			type: 'FeatureCollection',
 			features: [marker.toGeoJSON(3), polyline.toGeoJSON(3)]
+		});
+	});
+
+	describe.only("L.GeoJSON functions", function () {
+		var geojson = {
+			type: 'Feature',
+			properties: {},
+			geometry: {
+				type: 'Point',
+				coordinates: [20, 10, 5]
+			}
+		}, geojsonEmpty = {
+			type: 'Feature',
+			properties: {},
+			geometry: null
+		};
+
+		it("L.GeoJSON.geometryToLayer geometry type-Point", function () {
+			var expected = {
+				options: {},
+				_latlng: {lat: 10, lng: 20, alt: 5},
+				_initHooksCalled: true
+			};
+
+			expect(L.GeoJSON.geometryToLayer(geojson)).to.eql(expected);
+			expect(L.GeoJSON.geometryToLayer(geojsonEmpty)).to.eql(null);
+
+		});
+
+		it("L.GeoJSON.geometryToLayer geometry type-MultiPoint", function () {
+			var geoJsonMultiPoint = {
+				type: 'Feature',
+				properties: {},
+				geometry: {
+					type: 'MultiPoint',
+					coordinates: [[20, 10, 5], [30, 20, 4]]
+				}
+			};
+			var multiLayer = L.GeoJSON.geometryToLayer(geoJsonMultiPoint);
+
+			// layers will have value equal to size of co-ordinates
+			expect(Object.keys(multiLayer._layers).length).to.eql(2);
 		});
 	});
 });
